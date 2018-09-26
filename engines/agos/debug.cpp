@@ -591,6 +591,7 @@ void AGOSEngine::dumpSingleBitmap(int file, int image, const byte *offs, int w, 
 	if (Common::File::exists(buf))
 		return;
 
+	debugN(buf);
 	dumpBitmap(buf, offs, w, h, 0, _displayPalette, base);
 }
 

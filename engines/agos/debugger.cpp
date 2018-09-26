@@ -44,6 +44,7 @@ Debugger::Debugger(AGOSEngine *vm)
 	registerCmd("obj",      WRAP_METHOD(Debugger, Cmd_SetObjectFlag));
 	registerCmd("sub",      WRAP_METHOD(Debugger, Cmd_StartSubroutine));
 	registerCmd("dumpimage",      WRAP_METHOD(Debugger, Cmd_dumpImage));
+	registerCmd("dumpallimages",      WRAP_METHOD(Debugger, Cmd_dumpAllImages));
 	registerCmd("dumpscript",     WRAP_METHOD(Debugger, Cmd_dumpScript));
 
 }
@@ -226,6 +227,13 @@ bool Debugger::Cmd_StartSubroutine(int argc, const char **argv) {
 	} else
 		debugPrintf("Subroutine %d\n", _vm->_currentTable->id);
 
+	return true;
+}
+
+bool Debugger::Cmd_dumpAllImages(int argc, const char **argv) {
+	debugPrintf("Dumping All images to dumps (make sure directory exists)\n");
+	_vm->dumpAllVgaImageFiles();
+	debugPrintf("Done!\n");
 	return true;
 }
 
