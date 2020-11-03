@@ -27,6 +27,7 @@
 #include "bladerunner/audio_speech.h"
 
 #include "common/debug.h"
+#include "common/unicode-bidi.h"
 
 #include "graphics/font.h"
 #include "graphics/fonts/ttf.h"
@@ -242,7 +243,7 @@ void Subtitles::loadInGameSubsText(int actorId, int speech_id)  {
 
 	// Search in the first TextResource of the _vqaSubsTextResourceEntries table, which is the TextResource for in-game dialogue (i.e. not VQA dialogue)
 	const char *text = _vqaSubsTextResourceEntries[0]->getText((uint32)id);
-	_currentText = _useUTF8 ? Common::convertUtf8ToUtf32(text) : Common::U32String(text);
+	_currentText = _useUTF8 ? Common::convertUtf8ToUtf32(text) : Common::String(text).decode(Common::kWindows1255);
 }
 
 /**
@@ -262,7 +263,7 @@ void Subtitles::loadOuttakeSubsText(const Common::String &outtakesName, int fram
 	// Search in the requested TextResource at the fileIdx index of the _vqaSubsTextResourceEntries table for a quote that corresponds to the specified video frame
 	// debug("Number of resource quotes to search: %d, requested frame: %u", _vqaSubsTextResourceEntries[fileIdx]->getCount(), (uint32)frame );
 	const char *text = _vqaSubsTextResourceEntries[fileIdx]->getOuttakeTextByFrame((uint32)frame);
-	_currentText = _useUTF8 ? Common::convertUtf8ToUtf32(text) : Common::U32String(text);
+	_currentText = _useUTF8 ? Common::convertUtf8ToUtf32(text) : Common::String(text).decode(Common::kWindows1255);
 }
 
 /**
@@ -270,7 +271,7 @@ void Subtitles::loadOuttakeSubsText(const Common::String &outtakesName, int fram
  * Used for debug purposes mainly.
  */
 void Subtitles::setGameSubsText(Common::String dbgQuote, bool forceShowWhenNoSpeech) {
-	_currentText = _useUTF8 ? Common::convertUtf8ToUtf32(dbgQuote) : Common::U32String(dbgQuote);
+	_currentText = _useUTF8 ? Common::convertUtf8ToUtf32(dbgQuote) : Common::String(dbgQuote).decode(Common::kWindows1255);
 	_forceShowWhenNoSpeech = forceShowWhenNoSpeech; // overrides not showing subtitles when no one is speaking
 }
 
@@ -374,18 +375,22 @@ void Subtitles::draw(Graphics::Surface &s) {
 	int y = s.h - (kMarginBottom + MAX(kPreferedLine, lines.size()) * _font->getFontHeight());
 
 	for (uint i = 0; i < lines.size(); ++i, y += _font->getFontHeight()) {
+
+		Common::U32String line = convertBiDiU32String(lines[i]).visual;
+		line = Common::U32String(line.encode(Common::kWindows1255).c_str());
+
 		switch (_subtitlesInfo.fontType) {
 			case Subtitles::kSubtitlesFontTypeInternal:
 				// shadow/outline is part of the font color data
-				_font->drawString(&s, lines[i], 0, y, s.w, 0, Graphics::kTextAlignCenter);
+				_font->drawString(&s, line, 0, y, s.w, 0, Graphics::kTextAlignCenter);
 				break;
 			case Subtitles::kSubtitlesFontTypeTTF:
-				_font->drawString(&s, lines[i], -1, y    , s.w, s.format.RGBToColor(  0,   0,   0), Graphics::kTextAlignCenter);
-				_font->drawString(&s, lines[i],  0, y - 1, s.w, s.format.RGBToColor(  0,   0,   0), Graphics::kTextAlignCenter);
-				_font->drawString(&s, lines[i],  1, y    , s.w, s.format.RGBToColor(  0,   0,   0), Graphics::kTextAlignCenter);
-				_font->drawString(&s, lines[i],  0, y + 1, s.w, s.format.RGBToColor(  0,   0,   0), Graphics::kTextAlignCenter);
+				_font->drawString(&s, line, -1, y    , s.w, s.format.RGBToColor(  0,   0,   0), Graphics::kTextAlignCenter);
+				_font->drawString(&s, line,  0, y - 1, s.w, s.format.RGBToColor(  0,   0,   0), Graphics::kTextAlignCenter);
+				_font->drawString(&s, line,  1, y    , s.w, s.format.RGBToColor(  0,   0,   0), Graphics::kTextAlignCenter);
+				_font->drawString(&s, line,  0, y + 1, s.w, s.format.RGBToColor(  0,   0,   0), Graphics::kTextAlignCenter);
 
-				_font->drawString(&s, lines[i],  0, y    , s.w, s.format.RGBToColor(255, 255, 255), Graphics::kTextAlignCenter);
+				_font->drawString(&s, line,  0, y    , s.w, s.format.RGBToColor(255, 255, 255), Graphics::kTextAlignCenter);
 				break;
 		}
 	}
