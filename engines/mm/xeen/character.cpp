@@ -1138,7 +1138,7 @@ ItemCategory Character::makeItem(int itemLevel, int itemIndex, int reason) {
 
 			r1 = Res.MAKE_ITEM_ARR2[enchantmentSubtype][itemLevel][0];
 			r2 = Res.MAKE_ITEM_ARR2[enchantmentSubtype][itemLevel][1];
-			element = Res.MAKE_ITEM_ARR1[vm->getRandomNumber(r1, r2)];
+			element = Res.MAKE_ITEM_ARR1[enchantmentSubtype] + vm->getRandomNumber(r1, r2);
 			break;
 		case ENCHANTMENT_TYPE_ATTR_BONUS:
 			rn = vm->getRandomNumber(1, 100);
@@ -1164,10 +1164,14 @@ ItemCategory Character::makeItem(int itemLevel, int itemIndex, int reason) {
 				enchantmentSubtype = ATTR_THIEVERY;
 			}
 
-			r1 = Res.MAKE_ITEM_ARR3[enchantmentSubtype][itemLevel][0];
-			r2 = Res.MAKE_ITEM_ARR3[enchantmentSubtype][itemLevel][1];
-			// wrong formula here:
-			attrBonus = Res.MAKE_ITEM_ARR1[vm->getRandomNumber(r1, r2)];
+			{
+				// similar to Res.ATTRIBUTE_CATEGORIES
+				const int SUBTYPE_OFFSETS[] = {0, 10, 18, 26, 34, 40, 46, 51, 57, 62, 72};
+
+				r1 = Res.MAKE_ITEM_ARR3[enchantmentSubtype][itemLevel][0];
+				r2 = Res.MAKE_ITEM_ARR3[enchantmentSubtype][itemLevel][1];
+				attrBonus = SUBTYPE_OFFSETS[enchantmentSubtype] + vm->getRandomNumber(r1, r2);
+			}
 			break;
 
 		case ENCHANTMENT_TYPE_MATERIAL:
